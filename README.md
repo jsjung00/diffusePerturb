@@ -1,23 +1,15 @@
-<!-- SETUPTOOLS_LONG_DESCRIPTION_HIDE_BEGIN -->
-<p align="center">
-  <a href="https://github.com/vevotx/mosaicfm">
-    <picture>
-      <img alt="vevo-therapeutics" src="./assets/vevo_logo.png" width="95%">
-    </picture>
-  </a>
-</p>
-<!-- SETUPTOOLS_LONG_DESCRIPTION_HIDE_END -->
+# Discrete Diffusion for Perturbation Biology
 
-<p align="center">
-<a href="https://github.com/astral-sh/ruff"><img alt="Linter: Ruff" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json"></a>
-<a href="https://github.com/vevotx/mosaicfm/blob/main/LICENSE">
-        <img alt="License" src="https://img.shields.io/badge/License-Apache%202.0-green.svg">
-    </a>
-<a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
-</p>
-<br />
+## Todo histlist
+- [] Be able to run the repo and get wandb callbacks
+- [] Figure out number of tokens (vocab size) and sequence length that DD can handle
+    - [] Choose DD repo to use
+- [] Implement different encoding 
 
-# MosaicFM
+
+
+
+###  Forked from MosaicFM
 
 This is the internal codebase for the **MosaicFM** series of single-cell RNA-seq foundation models 
 developed by Vevo Therapeutics. Our repository follows a similar structure to [llm-foundry](https://github.com/mosaicml/llm-foundry/tree/main) 
