@@ -22,7 +22,8 @@ model:
   use_glu: False
   cell_emb_style: cls
   attn_config:
-    attn_impl: triton
+    attn_impl: flash 
+    use_attn_mask: False   
     attn_type: "grouped_query_attention"
     kv_nheads: 8
     attn_pdrop: 0.0
@@ -55,18 +56,18 @@ collator:
   max_length: 1024
   sampling: True
   data_style: "both"
-  num_bins: 51
+  num_bins: 10000 #51
   right_binning: False
   use_junk_tokens: False
 train_loader:
   dataset:
     streams:
       tahoe:
-        remote: None
-        local: "/vevo/mosaicfm/datasets/vevo_merged_jan_2025/tahoe_merged_MDS/train"
-      cellxgene:
-        remote: None
-        local: "/vevo/mosaicfm/datasets/vevo_merged_jan_2025/cellxgene_merged_MDS/train"
+        remote: "s3://vevo-ml-datasets/mosaicfm_v2/datasets/tahoe_100m_MDS_v1/train/"
+        local: "/tahoe/temp_data/train"
+      #cellxgene:
+      #  remote: None
+      #  local: "/vevo/mosaicfm/datasets/vevo_merged_jan_2025/cellxgene_merged_MDS/train"
     download_timeout: 300
     allow_unsafe_types: True
     shuffle: True
@@ -81,11 +82,11 @@ valid_loader:
   dataset:
     streams:
       tahoe:
-        remote: None
-        local: "/vevo/mosaicfm/datasets/vevo_merged_jan_2025/tahoe_merged_MDS/valid"
-      cellxgene:
-        remote: None
-        local: "/vevo/mosaicfm/datasets/vevo_merged_jan_2025/cellxgene_merged_MDS/valid"
+        remote: "s3://vevo-ml-datasets/mosaicfm_v2/datasets/tahoe_100m_MDS_v1/valid/"
+        local: "/tahoe/temp_data/train"
+      #cellxgene:
+      #  remote: None
+      #  local: local: "/tahoe/temp_data/valid"
     download_timeout: 300
     allow_unsafe_types: True
     shuffle: False
@@ -116,7 +117,8 @@ algorithms:
   low_precision_layernorm: {}
 precision: amp_bf16
 eval_interval: "1000ba"
-max_duration: "6ep"
+eval_subset_num_batches: 200 
+max_duration: "5000ba"
 fsdp_config:
   sharding_strategy: FULL_SHARD
   mixed_precision: DEFAULT
@@ -135,6 +137,6 @@ loggers:
   wandb:
     project: vevo-scgpt
     log_artifacts: False
-save_folder: "s3://vevo-ml-datasets/vevo-scgpt/models/{run_name}"
+save_folder: '/tahoe/checkpoints'
 save_interval: "2000ba"
-save_num_checkpoints_to_keep: 0
+#save_num_checkpoints_to_keep: 0
