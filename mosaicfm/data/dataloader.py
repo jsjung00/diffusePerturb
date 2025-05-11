@@ -10,7 +10,7 @@ from omegaconf import DictConfig
 from scipy.sparse import csr_matrix
 from streaming import Stream, StreamingDataLoader, StreamingDataset
 
-from mosaicfm.data import DataCollator
+from mosaicfm.data import DataCollator, DiffusionDataCollator
 from mosaicfm.tokenizer import GeneVocab
 
 
@@ -27,7 +27,7 @@ def build_streams(streams: dict[str, Any]) -> List[Stream]:
 
 def build_dataloader(
     vocab: GeneVocab,
-    loader_cfg: DictConfig,
+    loader_cfg: DictConfig, 
     collator_cfg: DictConfig,
     device_batch_size: int,
 ) -> DataSpec:
@@ -59,7 +59,9 @@ def build_dataloader(
     else:
         mlm_probability = collator_cfg.mlm_probability
 
-    collate_fn = DataCollator(
+    #TODO: change back
+
+    collate_fn = DiffusionDataCollator(
         vocab=vocab,
         do_padding=collator_cfg.get("do_padding", True),
         unexp_padding=loader_cfg.get("unexp_padding", False),
@@ -77,7 +79,7 @@ def build_dataloader(
         num_bins=collator_cfg.get("num_bins", 51),
         right_binning=collator_cfg.get("right_binning", False),
     )
-
+    
     data_loader = StreamingDataLoader(
         dataset,
         batch_size=device_batch_size,
@@ -88,6 +90,13 @@ def build_dataloader(
         prefetch_factor=loader_cfg.get("prefetch_factor", 48),
         persistent_workers=loader_cfg.get("persistent_workers", True),
     )
+
+    for batch in data_loader:
+        first_batch = batch 
+        break 
+
+    breakpoint() 
+
     return DataSpec(dataloader=data_loader)
 
 

@@ -324,7 +324,7 @@ class SCGPTModel(nn.Module):
             transformer_output = torch.cat([pcpt_output, gen_output], dim=1)
 
         output = {}
-        decoder_output = self.expression_decoder(transformer_output)
+        decoder_output = self.expression_decoder(transformer_output) 
         full_preds = decoder_output["pred"]  # (batch, seq_len)
         output["pcpt_preds"] = full_preds[:, : pcpt_genes.shape[1]]
         output["gen_preds"] = full_preds[:, pcpt_genes.shape[1] :]

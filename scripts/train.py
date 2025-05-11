@@ -12,6 +12,9 @@ import torch
 from composer.core.callback import Callback
 from llmfoundry.registry import callbacks
 
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+
 from mosaicfm.tasks import CellClassification, MarginalEssentiality
 
 callbacks.register("cell-classification", func=CellClassification)
