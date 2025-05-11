@@ -201,10 +201,9 @@ class DiffusionDataCollator(DefaultDataCollator):
             genes = examples[i]["genes"]
             expressions = examples[i]["expressions"]
             if self.do_binning:
-                expressions[self.keep_first_n_tokens :] = binning(
-                    row=expressions[self.keep_first_n_tokens :],
-                    n_bins=self.num_bins,
-                    right=self.right_binning,
+                expressions[self.keep_first_n_tokens :] = quantile_binning(
+                    x=expressions[self.keep_first_n_tokens :],
+                    n_bins=self.num_bins
                 )
             elif self.log_transform:
                 assert not (
@@ -621,10 +620,9 @@ class DataCollator(DefaultDataCollator):
             genes = examples[i]["genes"]
             expressions = examples[i]["expressions"]
             if self.do_binning:
-                expressions[self.keep_first_n_tokens :] = binning(
-                    row=expressions[self.keep_first_n_tokens :],
-                    n_bins=self.num_bins,
-                    right=self.right_binning,
+                expressions[self.keep_first_n_tokens :] = quantile_binning(
+                    x=expressions[self.keep_first_n_tokens :],
+                    n_bins=self.num_bins
                 )
             elif self.log_transform:
                 assert not (
@@ -1073,3 +1071,32 @@ def binning(
         binned_row = binned_row + 1
     # For right=True, the output will be in the range 1...n_bins-1
     return binned_row
+
+@torch.no_grad()
+def quantile_binning(x: torch.Tensor, n_bins: int) -> torch.LongTensor:
+    """
+    Bin the values in x into n_bins based on their quantiles.
+    
+    Args:
+        x (Tensor[N]): 1D tensor of values to bin.
+        n_bins (int): Number of quantile bins.
+        
+    Returns:
+        LongTensor[N]: Bin index for each element in x, in [0, n_bins-1].
+    """
+    # 1. Compute the quantile edges: q = 0, 1/n_bins, 2/n_bins, ..., 1
+    qs = torch.linspace(0, 1, steps=n_bins + 1, device=x.device)
+    # 2. Compute the values at those quantiles
+    #    This returns a tensor of shape (n_bins+1,)
+    edges = x.quantile(qs)
+    
+    bin_edges = edges[1:-1]
+    
+    # 4. Assign each x_i to a bin index
+    #    If x_i <= bin_edges[0] → 0, 
+    #    if bin_edges[k-1] < x_i <= bin_edges[k] → k, 
+    #    if x_i > bin_edges[-1] → n_bins-1
+    bin_idx = torch.bucketize(x, bin_edges, right=False)
+    
+    return bin_idx
+

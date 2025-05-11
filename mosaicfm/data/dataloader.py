@@ -59,8 +59,6 @@ def build_dataloader(
     else:
         mlm_probability = collator_cfg.mlm_probability
 
-    #TODO: change back
-
     collate_fn = DiffusionDataCollator(
         vocab=vocab,
         do_padding=collator_cfg.get("do_padding", True),
@@ -89,15 +87,10 @@ def build_dataloader(
         pin_memory=loader_cfg.get("pin_memory", True),
         prefetch_factor=loader_cfg.get("prefetch_factor", 48),
         persistent_workers=loader_cfg.get("persistent_workers", True),
+        sampler=None 
     )
 
-    for batch in data_loader:
-        first_batch = batch 
-        break 
-
-    breakpoint() 
-
-    return DataSpec(dataloader=data_loader)
+    return data_loader
 
 
 def build_perturbation_dataloader(

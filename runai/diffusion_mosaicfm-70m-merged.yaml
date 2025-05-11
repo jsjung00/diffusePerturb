@@ -61,7 +61,7 @@ collator:
   max_length: 1024
   sampling: True
   data_style: "both"
-  num_bins: 10000 #51
+  num_bins: 51
   right_binning: False
   use_junk_tokens: False
 train_loader:

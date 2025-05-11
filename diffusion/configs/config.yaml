@@ -19,7 +19,7 @@ seed: 1
 global_seed: 42
 
 loader:
-  global_batch_size: 400
+  global_batch_size: 64
   eval_global_batch_size: ${.global_batch_size}
   # Note: batch_size and eval_batch_size are **per machine**
   batch_size: ${div_up:${.global_batch_size}, ${eval:${trainer.devices} * ${trainer.num_nodes}}}
@@ -96,14 +96,14 @@ hydra:
 
 checkpointing:
   # Use custom `save_dir` if, e.g., saving to S3 bucket, otherwise leave this parameter as is
-  save_dir: ${cwd:}
+  save_dir: '/tahoe/diffusePerturb/diffusion'
   # Note: `checkpoints` path should correspond to `checkpoint_every_n_steps.dirpath`
   resume_from_ckpt: true
   resume_ckpt_path: ${.save_dir}/checkpoints/last.ckpt
 
-device_train_batch_size: 400
-global_train_batch_size: 400
-device_eval_batch_size: 400
+device_train_batch_size: 64
+global_train_batch_size: 64
+device_eval_batch_size: 64
 device_train_microbatch_size: "auto"
 vocabulary:
   remote: "s3://vevo-ml-datasets/mosaicfm_v2/datasets/vevo_v2_vocab.json" #TODO: should this be off?
