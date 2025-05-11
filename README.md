@@ -29,6 +29,9 @@ With this we frame the problem as **sequence to sequence** modelling problem. Mo
 This fits well with a masked language discrete diffusion model, which we train on the Tahoe 100M dataset. 
 
 ### Current methods
+<p align="center">
+  <img src="./ddpm.png" alt="Training Loss Curve" width="500">
+</p>
 - mosaicFM uses a encoder only model with transformer; predict continuous values
 - scDiffusion uses diffustion in latent space (typical gaussian diffusion)
 - scRDiT uses DDPM with transformer backbone
@@ -45,6 +48,8 @@ With limited training we get around 0.6 NLL
 <p align="center">
   <img src="./training_loss.png" alt="Training Loss Curve" width="500">
 </p>
+
+
 
 
 ### Handling "ordinal" values under categorical loss
