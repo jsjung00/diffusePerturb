@@ -28,7 +28,7 @@ With this we frame the problem as **sequence to sequence** modelling problem. Mo
 
 This fits well with a masked language discrete diffusion model, which we train on the Tahoe 100M dataset. 
 
-## Current methods
+### Current methods
 - mosaicFM uses a encoder only model with transformer; predict continuous values
 - scDiffusion uses diffustion in latent space (typical gaussian diffusion)
 - scRDiT uses DDPM with transformer backbone
