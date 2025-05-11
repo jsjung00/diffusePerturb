@@ -1,7 +1,14 @@
 # DDSC: Masked Discrete Diffusion for Gene Expression 
+![Diffusion Animation](./diffusion.gif)
 
 ## Motivation
 Gene expression count vectors are tricky to navigate with machine learning models: they have a very peaked distribution around small values but it is also long tailed. 
+Visualized is a histogram of count magnitudes from 1M sampled cells. 
+<p align="center">
+  <img src="./distribution.png" alt="Training Loss Curve" width="500">
+</p>
+
+
 Moreover, the count distributions can be cell dependent and higher variable per sample. 
 This makes it challenging to train a model to predict count vectors. When predicting raw counts and moreover predicting the mean (say under L2 loss), without hand crafted loss function, the model will be **dominated by the large counts** and will not be robust to errors of small counts. 
 
@@ -23,7 +30,7 @@ With limited training we get around 0.6 NLL
 
 ### Inpainting Generation
 We can do flexible controllable generation with our discrete diffusion model and toggle the level and location of masking. 
-![Diffusion Animation](./diffusion.gif)
+
 
 
 
