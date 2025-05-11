@@ -32,6 +32,7 @@ This fits well with a masked language discrete diffusion model, which we train o
 <p align="center">
   <img src="./ddpm.png" alt="Training Loss Curve" width="500">
 </p>
+
 - mosaicFM uses a encoder only model with transformer; predict continuous values
 - scDiffusion uses diffustion in latent space (typical gaussian diffusion)
 - scRDiT uses DDPM with transformer backbone
