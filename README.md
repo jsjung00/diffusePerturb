@@ -48,12 +48,12 @@ With limited training we get around 0.6 NLL
 
 
 ### Handling "ordinal" values under categorical loss
-One major fundamental limitation of modeling gene count vectors as a sequence of tokens is that tokens are **not inherently ordinal**. 
-This can lead to bad inference if the model has no bias towards "closer" tokens, i.e ranks of similar value. 
+One major fundamental limitation of modeling gene count vectors as a sequence of tokens is that **tokens are not inherently ordinal**. 
+This can lead to bad inference if the model has no bias towards "closer" tokens i.e ranks of similar value. 
 
-We recognize however that the actual gene count data can be quite noisy and variable, so we want the model to be forced to give a "dirac delta" guess of one rank or token. 
+We recognize however that the actual gene count data can be quite noisy and variable; thus we think it **makes sense for models to output distributions** rather a "dirac delta" guess of one floating point number.
 
-To reconcile these issues, we use a mixed loss: both the cross entropy or log loss $p(x_t^i | \cdot)$ to encourage the model to predict the 'correct" rank and also a mean-matching loss that encourages the distribution's mean to match the "correct" rank, 
+To reconcile these issues, we use a mixed loss: both the cross entropy or log loss $p(x_t^i | \cdot)$ to encourage the model to predict the 'correct" rank and also a **mean-matching loss to tie the distribution's mean to match the "correct" value**, 
 $$||\sum p(x_t^j)x_t^j - x_t^i||$$. 
 In total we have *log_loss + mean_matching_loss*
 
