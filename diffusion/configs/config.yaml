@@ -1,0 +1,208 @@
+defaults:
+  - _self_
+  - /callbacks: [checkpoint_every_n_steps, checkpoint_monitor, learning_rate_monitor]
+  - /data: openwebtext
+  - /model: small
+  - /strategy: ddp
+  - /noise: loglinear
+  - /lr_scheduler: constant_warmup
+
+mode: train  # train / ppl_eval / sample_eval
+diffusion: absorbing_state
+backbone: dit  # dit / dimamba / ar
+parameterization: subs  # subs / d3pm / sedd
+time_conditioning: False
+T: 0  # 0 (continuous time) / 1000 
+subs_masking: False
+
+seed: 1
+global_seed: 42
+
+loader:
+  global_batch_size: 400
+  eval_global_batch_size: ${.global_batch_size}
+  # Note: batch_size and eval_batch_size are **per machine**
+  batch_size: ${div_up:${.global_batch_size}, ${eval:${trainer.devices} * ${trainer.num_nodes}}}
+  eval_batch_size: ${div_up:${.eval_global_batch_size}, ${eval:${trainer.devices} * ${trainer.num_nodes}}}
+  num_workers: ${eval:"len(__import__('os').sched_getaffinity(0))"}
+  pin_memory: True
+
+sampling:
+  predictor: ddpm_cache  # analytic, ddpm, ddpm_cache
+  steps: 128
+  noise_removal: True
+  # TODO(yair): @subham, why aren't these params under `eval`?
+  num_sample_batches: 2  # Total samples: `num_gpus` * `loader.eval_batch_size` * num_sample_batches
+  num_sample_log: 2
+  semi_ar: False
+  stride_length: 1
+  num_strides: 1
+
+training:
+  ema: 0 
+  antithetic_sampling: True
+  importance_sampling: False
+  sampling_eps: 1e-3
+  change_of_variables: False
+
+eval:
+  checkpoint_path: ''  # Used to evaluate a checkpoint after training.
+  disable_ema: True 
+  compute_generative_perplexity: False
+  perplexity_batch_size: 8
+  compute_perplexity_on_sanity: False
+  gen_ppl_eval_model_name_or_path: gpt2-large  # gpt2-large, meta-llama/Llama-2-7b-hf
+  generate_samples: True
+
+optim:
+  weight_decay: 0
+  lr: 3e-4
+  beta1: 0.9
+  beta2: 0.999
+  eps: 1e-8
+
+trainer:
+  _target_: lightning.Trainer
+  accelerator: cuda
+  num_nodes: 1
+  devices: ${device_count:}
+  accumulate_grad_batches: ${div_up:${loader.global_batch_size}, ${eval:${trainer.devices} * ${loader.batch_size} * ${trainer.num_nodes}}}
+  gradient_clip_val: 1.0
+  precision: 'bf16'
+  num_sanity_val_steps: 2
+  max_steps: 1_000_000
+  log_every_n_steps: 10
+  limit_train_batches: 1.0   # train on full dataset, can be used to toggle quick run
+  limit_val_batches: 1.0     # validate on full dataset, can be used to toggle quick run
+  val_check_interval: 10000
+
+wandb:
+  project: text-diffusion
+  notes: Mulan for text
+  group: null
+  job_type: null
+  name: null
+  id: ${.name}_${seed}
+  tags:
+    - ${noise.type}
+    - ${data.train}
+    - ${data.valid}
+
+hydra:
+  run:
+    dir: ./outputs/${data.train}/${now:%Y.%m.%d}/${now:%H%M%S}
+  job:
+    chdir: true
+
+checkpointing:
+  # Use custom `save_dir` if, e.g., saving to S3 bucket, otherwise leave this parameter as is
+  save_dir: ${cwd:}
+  # Note: `checkpoints` path should correspond to `checkpoint_every_n_steps.dirpath`
+  resume_from_ckpt: true
+  resume_ckpt_path: ${.save_dir}/checkpoints/last.ckpt
+
+device_train_batch_size: 400
+global_train_batch_size: 400
+device_eval_batch_size: 400
+device_train_microbatch_size: "auto"
+vocabulary:
+  remote: "s3://vevo-ml-datasets/mosaicfm_v2/datasets/vevo_v2_vocab.json" #TODO: should this be off?
+  local: "vocab.json"
+prev_model:
+  name: vevo_scgpt
+  vocab_size: None 
+  eval:
+    generate_samples: false 
+    compute_generative_perplexity: false 
+  training:
+    ema: 0 
+  d_model: 512
+  n_layers: 12
+  init_device: cpu
+  expansion_ratio: 4
+  standard_scale_outputs: False
+  transformer_activation: relu
+  n_heads: 8
+  norm_scheme: "pre"
+  use_generative_training: True
+  use_cell_conditioned_generation: False
+  use_glu: False
+  cell_emb_style: cls
+  attn_config:
+    attn_impl: flash 
+    use_attn_mask: False   
+    attn_type: "grouped_query_attention"
+    kv_nheads: 8
+    attn_pdrop: 0.0
+  norm_config:
+    norm_type: "layernorm"
+    eps: 1.0e-5
+  expression_encoder:
+    input_emb_style: "continuous" #TODO: change 
+    dropout: 0.1
+    max_value: 512
+    activation: relu
+    use_norm: True
+  gene_encoder:
+    use_norm: True
+  mvc:
+    arch_style: "inner product"
+    query_activation: "sigmoid"
+    scaled_dot_product: True
+  expression_decoder:
+    n_outputs: 1
+    n_layers: 1
+    activation: "leaky_relu"
+collator:
+  do_padding: True
+  pad_value: -2
+  do_mlm: True
+  do_binning: True #set do_binning=False and log_transform=True and provide target_sum if you want to train with log1p inputs.
+  mlm_probability: 0.5
+  mask_value: -1
+  max_length: 1024
+  sampling: True
+  data_style: "both"
+  num_bins: 51
+  right_binning: False
+  use_junk_tokens: False
+  pad_token_id: None 
+train_loader:
+  dataset:
+    streams:
+      tahoe:
+        remote: "s3://vevo-ml-datasets/mosaicfm_v2/datasets/tahoe_100m_MDS_v1/train/"
+        local: "/tahoe/temp_data/train"
+      #cellxgene:
+      #  remote: None
+      #  local: "/vevo/mosaicfm/datasets/vevo_merged_jan_2025/cellxgene_merged_MDS/train"
+    download_timeout: 300
+    allow_unsafe_types: True
+    shuffle: True
+    shuffle_seed: ${global_seed}
+    num_canonical_nodes: 2
+  drop_last: False
+  num_workers: 8
+  pin_memory: True
+  prefetch_factor: 48
+  persistent_workers: True
+valid_loader:
+  dataset:
+    streams:
+      tahoe:
+        remote: "s3://vevo-ml-datasets/mosaicfm_v2/datasets/tahoe_100m_MDS_v1/valid/"
+        local: "/tahoe/temp_data/valid"
+      #cellxgene:
+      #  remote: None
+      #  local: local: "/tahoe/temp_data/valid"
+    download_timeout: 300
+    allow_unsafe_types: True
+    shuffle: False
+    shuffle_seed: ${global_seed}
+    num_canonical_nodes: 2
+  drop_last: False
+  num_workers: 8
+  pin_memory: True
+  prefetch_factor: 48
+  persistent_workers: True
+
