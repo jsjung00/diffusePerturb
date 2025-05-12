@@ -46,7 +46,7 @@ training:
   change_of_variables: False
 
 eval:
-  checkpoint_path: '/tahoe/diffusePerturb/diffusion_folder/checkpoints/best.ckpt'  # Used to evaluate a checkpoint after training.
+  checkpoint_path: '/tahoe/diffusePerturb/diffusion/checkpoints/0-73000.ckpt'  # Used to evaluate a checkpoint after training.
   disable_ema: True 
   compute_generative_perplexity: False
   perplexity_batch_size: 8
