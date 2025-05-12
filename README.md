@@ -68,6 +68,17 @@ In total we have *log_loss + mean_matching_loss*
 ### Inpainting Generation
 We can do flexible controllable generation with our discrete diffusion model and toggle the level and location of masking. 
 
+For example here is generation from a highly corrupted gene count vector. 
+<p align="center">
+  <img src="./diffusion_folder/higher_mask_diffusion.gif.png" alt="Training Loss Curve" width="500">
+</p>
+and here is generation for a minimally corrupted gene count vector.
+<p align="center">
+  <img src="./diffusion_folder/lower_mask_diffusion.gif" alt="Training Loss Curve" width="500">
+</p>
+
+
+
 
 
 
