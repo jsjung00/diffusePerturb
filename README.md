@@ -77,6 +77,15 @@ and here is generation for a minimally corrupted gene count vector.
   <img src="./diffusion_folder/lower_mask_diffusion.gif" alt="Training Loss Curve" width="500">
 </p>
 
+### Preliminary experiments
+Inpainting generation seems to show some promise in recovering missing/removed count tokens, even with high (80%) degradation and removal of counts.
+<p align="center">
+  <img src="accuracy.png" alt="Training Loss Curve" width="500">
+</p>
+
+
+
+
 
 
 
